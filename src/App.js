@@ -2,26 +2,17 @@ import "./App.css";
 
 import { useState, useEffect } from "react";
 
+import { useFetch } from "./hooks/useFetch";
+
 const url = "http://localhost:3000/products";
 
 function App() {
   const [products, setProducts] = useState([]);
 
+  const { data: items, httpConfig, loading } = useFetch(url);
+
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-
-  // get products
-  useEffect(() => {
-    async function fetchData() {
-      const res = await fetch(url);
-
-      const data = await res.json();
-
-      setProducts(data);
-    }
-
-    fetchData();
-  }, []);
 
   //send products
   const handleSubmit = async (e) => {
@@ -32,17 +23,7 @@ function App() {
       price,
     };
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(product),
-    });
-
-    //dynamic list loading
-    const addedProduct = await res.json();
-    setProducts((prevProducts) => [...prevProducts, addedProduct]);
+    httpConfig(product, "POST");
 
     setName("");
     setPrice("");
@@ -51,13 +32,17 @@ function App() {
   return (
     <div className="App">
       <h1>Products List</h1>
-      <ul>
-        {products.map((product) => (
-          <li key={product.id}>
-            {product.name} - R$: {product.price}
-          </li>
-        ))}
-      </ul>
+      {loading && <p>Loading data...</p>}
+      {!loading && (
+        <ul>
+          {items &&
+            items.map((product) => (
+              <li key={product.id}>
+                {product.name} - R$: {product.price}
+              </li>
+            ))}
+        </ul>
+      )}
 
       <div className="add-product">
         <p>Adicionar produto:</p>
@@ -81,7 +66,8 @@ function App() {
             />
           </label>
           {/* 7 - state de loading no post */}
-          <input type="submit" value="Criar" />
+          {loading && <input type="submit" disabled value="Wait" />}
+          {!loading && <input type="submit" value="Create" />}
         </form>
       </div>
     </div>
