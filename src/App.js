@@ -24,7 +24,6 @@ function App() {
   }, []);
 
   //send products
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -40,6 +39,13 @@ function App() {
       },
       body: JSON.stringify(product),
     });
+
+    //dynamic list loading
+    const addedProduct = await res.json();
+    setProducts((prevProducts) => [...prevProducts, addedProduct]);
+
+    setName("");
+    setPrice("");
   };
 
   return (
